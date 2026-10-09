@@ -1,0 +1,98 @@
+digraph BladeSec {
+  graph [
+    rankdir=TB,
+    bgcolor="#FFFFFF",
+    pad=0.32,
+    nodesep=0.42,
+    ranksep=0.65,
+    splines=polyline,
+    fontname="Arial",
+    fontsize=15,
+    compound=true
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fillcolor="#FFFFFF",
+    color="#CBD5E1",
+    fontcolor="#172B4D",
+    fontname="Arial",
+    fontsize=16,
+    penwidth=1.3,
+    margin="0.24,0.18"
+  ];
+  edge [
+    color="#64748B",
+    fontcolor="#475569",
+    fontname="Arial",
+    fontsize=12,
+    penwidth=1.4,
+    arrowsize=0.75
+  ];
+
+  control [
+    width=5.4,
+    color="#163354",
+    fillcolor="#163354",
+    fontcolor="#FFFFFF",
+    label=<<B>BladeSec control plane</B><BR/><FONT POINT-SIZE="13">Task orchestration, isolation, execution policy</FONT>>
+  ];
+
+  subgraph cluster_investigation {
+    label="AGENT WORKSPACE  /  independent context for each task";
+    labeljust=l;
+    fontcolor="#526880";
+    fontsize=13;
+    style="rounded,filled";
+    color="#D9E3EF";
+    fillcolor="#F6F9FD";
+    penwidth=1.2;
+    margin=22;
+
+    dongfeng [
+      width=2.15,
+      label=<<B>Dongfeng</B><BR/><FONT POINT-SIZE="13">Source analysis</FONT><BR/><FONT POINT-SIZE="12" COLOR="#64748B">Optional hypotheses</FONT>>
+    ];
+    shenfeng [
+      width=2.55,
+      color="#547EAE",
+      fillcolor="#E8F0FC",
+      label=<<B>Shenfeng</B><BR/><FONT POINT-SIZE="13">PoC development</FONT><BR/><FONT POINT-SIZE="12">Plan, construct, review</FONT>>
+    ];
+    target [
+      width=2.35,
+      label=<<B>Vulnerable target</B><BR/><FONT POINT-SIZE="13">Candidate execution</FONT><BR/><FONT POINT-SIZE="12" COLOR="#64748B">Sanitizer and stack evidence</FONT>>
+    ];
+    { rank=same; dongfeng; shenfeng; target; }
+    dongfeng -> shenfeng [style=dashed, label=" Inform "];
+    shenfeng -> target [dir=both, label=" Test / refine "];
+  }
+
+  subgraph cluster_verification {
+    label="LAB  /  independent verification";
+    labeljust=l;
+    fontcolor="#286659";
+    fontsize=13;
+    style="rounded,filled";
+    color="#C5DED5";
+    fillcolor="#F2F8F5";
+    penwidth=1.2;
+    margin=22;
+
+    final_poc [
+      width=2.55,
+      color="#9EBCB1",
+      label=<<B>Final PoC</B><BR/><FONT POINT-SIZE="13">One designated input</FONT>>
+    ];
+    verification [
+      width=3.15,
+      color="#9EBCB1",
+      label=<<B>Verification record</B><BR/><FONT POINT-SIZE="13">Vulnerable + hidden patched builds</FONT><BR/><FONT POINT-SIZE="12" COLOR="#526B62">Same input, recorded exit codes</FONT>>
+    ];
+    { rank=same; final_poc; verification; }
+    final_poc -> verification [color="#548575", label=" Verify ", fontcolor="#426F61"];
+  }
+
+  control -> shenfeng [label=" Task inputs ", lhead=cluster_investigation];
+  shenfeng -> final_poc [label=" Designate final input ", color="#416D9E", fontcolor="#416D9E", lhead=cluster_verification];
+}
