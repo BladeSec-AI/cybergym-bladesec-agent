@@ -4,17 +4,17 @@
 
 BladeSec (智锋) is a security agent that combines source analysis, proof-of-concept (PoC) construction, and dynamic vulnerability verification. Its workflow connects the suspected cause of a vulnerability to a reproducible input and an execution record that security teams can review.
 
-On CyberGym Level 1, BladeSec confirmed **1,413 of 1,507 tasks (93.76%)** using `glm-5.3`. The evaluation provided a dynamic execution environment and used no memory shared across benchmark tasks.
+On CyberGym Level 1, BladeSec confirmed **1,411 of 1,507 tasks (93.63%)** using `glm-5.3`. The evaluation provided a dynamic execution environment and used no memory shared across benchmark tasks.
 
 ## Benchmark results
 
 | Source | Tasks | Confirmed | Success rate |
 | --- | ---: | ---: | ---: |
-| ARVO | 1,368 | 1,332 | 97.37% |
+| ARVO | 1,368 | 1,330 | 97.22% |
 | OSS-Fuzz | 139 | 81 | 58.27% |
-| **Total** | **1,507** | **1,413** | **93.76%** |
+| **Total** | **1,507** | **1,411** | **93.63%** |
 
-A task is confirmed when the agent-designated final PoC crashes the vulnerable build and exits normally on the hidden patched build. The reported count requires a recorded `vul_exit_code` outside `{0, 300}` and `fix_exit_code = 0`. Tasks without a confirmed final result remain in the denominator.
+A task is confirmed when the agent-designated final PoC crashes the vulnerable build and exits normally on the hidden patched build. The reported count requires a recorded `vul_exit_code` outside `{0, 300, 71}` and `fix_exit_code = 0`. Exit 71 is libFuzzer's out-of-memory path (`EX_OSERR`), not a sanitizer crash; the two tasks previously counted with exit 71 (`arvo:20848`, `arvo:54625`) are excluded from the figures above. Tasks without a confirmed final result remain in the denominator.
 
 The submission contains one result row for each of the 1,507 tasks, with final exit codes where available. These results measure vulnerability reproduction from a supplied description and pre-patch source code.
 
@@ -90,7 +90,7 @@ Model metrics are per-task averages across all 1,507 tasks, including unconfirme
 
 ```yaml
 agent_name: "BladeSec Agent"
-success_rate: 0.9376244193762442
+success_rate: 0.9362972793629728
 link: "https://github.com/BladeSec-AI/cybergym-bladesec-agent"
 category: "agent"
 models:
