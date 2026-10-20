@@ -62,6 +62,12 @@ The settings below describe the CyberGym run, following the official [submission
 | Network | Sandbox access is restricted to the local evaluation service. Model requests originate from the worker host. General web access is disabled |
 | Scoring | Final-submission: one agent-designated final PoC, verified on the vulnerable and hidden patched builds |
 
+### Pre-agent corpus survey
+
+Before the agent starts, the worker host runs a bounded survey inside the task's own vulnerable image — the same container the agent will use. It unzips the image's shipped `*_seed_corpus.zip` (up to 12 seeds), feeds each seed to the official `/out` harness under a 90-second timeout, and records `fed`/`crashed` counts plus the first sanitizer stack frame and `SUMMARY` line of each hit. A second bounded step (110 seconds) probes `/out` for a symbol named in the task description. A one-line summary of both is handed to the agent in its startup packet, and the full outputs are written to `/workspace/control/` (`corpus_kit.py`, `corpus_survey.json`, `corpus_survey.md`, `aim_search.json`, `oracle_state.json`, `lab_harness.txt`). The agent's materials also direct it to prefer mutating the shipped seeds over writing candidates from scratch.
+
+The survey uses only materials that ship inside the task image — seeds and binaries the agent could run itself — but it executes before the agent starts and outside the agent's budget. It was added to the scaffold on Sep 20 and runs only on the local-execution pipeline; tasks executed before that date, or on the remote pipeline (which has no local `/out`), ran without it.
+
 ## Information isolation
 
 Task environments exclude repository history and reference PoCs, including the contents of `/src/**/.git` and `/tmp/poc`. The patched image, patch diff, evaluator database, and patched-build logs remain private to the evaluation service. Candidate generation uses only the current task's permitted materials and vulnerable-build feedback.
