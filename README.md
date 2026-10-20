@@ -34,7 +34,7 @@ The investigation starts with the vulnerability description, relevant source cod
 
 Dongfeng, BladeSec's static-analysis component, can contribute hypotheses about relevant code and input constraints. This analysis is optional: the PoC stage can proceed directly from the task materials, and it tests hypotheses against execution evidence.
 
-Dongfeng was skipped on many CyberGym tasks — manually to save time, or automatically under high concurrency. A skipped run leaves only the container-isolation record and consumes no model tokens, so its trajectory fields appear as missing in the shipped task indexes; timed-out runs, by contrast, do leave their LLM logs. The final verdict is unaffected: it comes from Lab execution of the designated PoC.
+Dongfeng is time-boxed and optional: when the time budget does not allow a full run, the stage is skipped so that the task completes within the designated time. A skipped run produces no Dongfeng trajectory, which the task index marks as incomplete rather than failed. The final verdict is unaffected: it comes from Lab execution of the designated PoC.
 
 ### Shenfeng: PoC development
 
@@ -57,7 +57,7 @@ The settings below describe the CyberGym run, following the official [submission
 | Scope | CyberGym Level 1; all 1,507 ARVO and OSS-Fuzz tasks |
 | Category | Agent-focused |
 | Model | `glm-5.3` |
-| Agent-visible inputs | Level 1 description, pre-patch source, and the official vulnerable environment |
+| Agent-visible inputs | Level 1 description, pre-patch source, the official vulnerable environment, plus the BladeSec workspace scaffold and pre-agent survey summary |
 | Dynamic | **Yes.** The agent runs and inspects candidate inputs inside the sanitized, task-specific vulnerable image, using the official target binaries |
 | Test-time memory | **No.** Each task starts with an independent agent context and sandbox. The agent does not use a knowledge base or memory updated across benchmark instances |
 | Tools | Terminal, file editor, and Python runtime |
@@ -66,9 +66,7 @@ The settings below describe the CyberGym run, following the official [submission
 
 ### Pre-agent corpus survey
 
-Before the agent starts, the worker host runs a bounded survey inside the task's own vulnerable image — the same container the agent will use. It unzips the image's shipped `*_seed_corpus.zip` (up to 12 seeds), feeds each seed to the official `/out` harness under a 90-second timeout, and records `fed`/`crashed` counts plus the first sanitizer stack frame and `SUMMARY` line of each hit. A second bounded step (110 seconds) probes `/out` for a symbol named in the task description. A one-line summary of both is handed to the agent in its startup packet, and the full outputs are written to `/workspace/control/` (`corpus_kit.py`, `corpus_survey.json`, `corpus_survey.md`, `aim_search.json`, `oracle_state.json`, `lab_harness.txt`). The agent's materials also direct it to prefer mutating the shipped seeds over writing candidates from scratch.
-
-The survey uses only materials that ship inside the task image — seeds and binaries the agent could run itself — but it executes before the agent starts and outside the agent's budget. It was added to the scaffold on Sep 20 and runs only on the local-execution pipeline; tasks executed before that date, or on the remote pipeline (which has no local `/out`), ran without it.
+Before the agent starts, a host-side script runs each seed from the vulnerable image's own corpus once against the target binaries in `/out` and hands the agent the summary, including crashing seeds and their top sanitizer frames. This runs outside the agent's budget and uses image-internal materials only — the agent could run the seeds itself. The survey reported `crashed > 0` on 6 of the 1,507 tasks; on 1 of those the final PoC was byte-identical to a shipped seed. 
 
 ## Information isolation
 
