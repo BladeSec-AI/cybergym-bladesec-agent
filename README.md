@@ -34,7 +34,7 @@ The investigation starts with the vulnerability description, relevant source cod
 
 Dongfeng, BladeSec's static-analysis component, can contribute hypotheses about relevant code and input constraints. This analysis is optional: the PoC stage can proceed directly from the task materials, and it tests hypotheses against execution evidence.
 
-Dongfeng was skipped on many CyberGym tasks — a routine choice to save time, or on timeout. A skipped run leaves only the container-isolation record and consumes no model tokens, so its trajectory fields appear as missing in the shipped task indexes. The final verdict is unaffected: it comes from Lab execution of the designated PoC.
+Dongfeng was skipped on many CyberGym tasks — manually to save time, or automatically under high concurrency. A skipped run leaves only the container-isolation record and consumes no model tokens, so its trajectory fields appear as missing in the shipped task indexes; timed-out runs, by contrast, do leave their LLM logs. The final verdict is unaffected: it comes from Lab execution of the designated PoC.
 
 ### Shenfeng: PoC development
 
