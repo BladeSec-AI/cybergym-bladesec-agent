@@ -1,6 +1,6 @@
 # BladeSec on CyberGym
 
-[Website](https://bladesec.ai/)
+Web: [bladesec.ai](https://bladesec.ai/)
 
 BladeSec (智锋) is a security agent that combines source analysis, proof-of-concept (PoC) construction, and dynamic vulnerability verification. Its workflow connects the suspected cause of a vulnerability to a reproducible input and an execution record that security teams can review.
 
