@@ -46,7 +46,7 @@ On this update, the shipped examples skip Dongfeng with `BLADE_CYBERGYM_SKIP_DON
 
 Shenfeng handles PoC development through coordinated planning, execution, and review roles. It constructs a candidate, runs it against the vulnerable target, and uses sanitizer output and stack traces to assess whether the observed behavior matches the described vulnerability. That assessment guides the next experiment or the selection of a final PoC.
 
-Shenfeng is deployed as more than one worker configuration. In the pipeline the stage is still Shenfeng: the control plane records `shenfeng_job_observed`. On the configuration used for most of this update, the worker prompt identifies the role as a CyberGym Level 1 worker.
+Shenfeng is deployed as more than one worker configuration. In the pipeline the stage is still Shenfeng: the control plane records `shenfeng_job_observed`. The configurations differ in what they load. On the configuration used for most of this update, the worker prompt identifies the role as a CyberGym Level 1 worker, and that configuration can load `bladesec-jev`. The other configuration does not. The architecture figure is unchanged.
 
 The agent has a terminal, a file editor, and a Python runtime for source inspection, input generation, and execution. Diagnostic builds can help investigate a hypothesis; final verification uses the original benchmark binaries. The workflow preserves candidate inputs and execution records for subsequent review.
 
@@ -55,6 +55,8 @@ The agent has a terminal, a file editor, and a Python runtime for source inspect
 This update has two changes. One is a model. The other is the agent's PoC capability. The description in this section is the technical account.
 
 **Model: `bladesec-jev`.** `bladesec-jev` (BladeSec-Jev) is our own model, trained on a dataset we collected, and is listed with `glm-5.3` and `deepseek-v4-pro`. It is a function-level security model. For each function it outputs a patch-likelihood score and source, bridge, and sink role scores. The task description is an inference-time query: it affects relevance scores and scan order, and it is not a training input. Training does not use the task ID, the official PoC, or evaluation labels. A keyword prefilter reorders the scan and does not drop candidates. The training corpus is a self-collected set of C, C++, and Java function-level samples. Positive functions are those modified by a public CVE or NVD fix commit. Negative functions are long-stable functions from the same projects with no security advisory. Features are static and function-level: memory-operation density, missing bounds checks, parse and length loops, sanitizer-related calls, and complexity. When this model is loaded, Shenfeng reads its scores from `jev_card.md` before planning. It does not replace `glm-5.3` or `deepseek-v4-pro`. Those remain the models that write and revise the PoC.
+
+**Example logs.** The twelve shipped logs are not one file layout, because they come from the two Shenfeng configurations above. `arvo:20848` and `arvo:54625` are the earlier archive. Their filenames still contain `shenfeng`, and that archive has no `jev_card.md` and no `model_name`. The other ten use the `bladesec-agent-shenfeng` logs. Seven of those ten include `jev_card.md`. Three do not: `arvo:53183`, `oss-fuzz:382721849`, and `oss-fuzz:42536279`. Those three request logs name `glm-5.3`. Where a request log names a chat model, it is `glm-5.3` or `deepseek-v4-pro`. The `models[].name` field in the shipped `task.json` files still says `glm-5.3`.
 
 **Agent capability: semantic guidance and coordinated fuzzing.** Shenfeng pairs source-level semantic guidance with dynamic reachability and hotspot probes that add no third-party dependencies, and with fuzzing across the official target binaries. The run recovers the input format, works through the state machine in front of the bug, and spends less of the budget on inputs that cannot reach it. Candidates can be submitted more than once to the vulnerable build. The hidden patched build is still queried once, when the final PoC is designated, not as a search oracle. In the ten shipped trajectories, vulnerable submissions range from one to five. That vul/fix pair is what the agent uses to drop a crash that is the wrong bug, an input that is pathologically slow, and a direction the supplied vulnerable tree cannot realize. Nothing in this loop is hardcoded to a task. `arvo:6483` in the task notes is one case of a description the vulnerable tree cannot realize.
 
@@ -144,7 +146,7 @@ The joint per-task average of `glm-5.3`, `deepseek-v4-pro`, and `bladesec-jev` t
 | Non-cached input tokens | 7,055,556 |
 | Cache-read tokens | 0 |
 | Cache-creation tokens | 0 |
-| Output tokens | 12,223 |
+| Output tokens | 122,234 |
 | Model requests | 108.80 |
 | Wall-clock time | 4,416 seconds (73.60 minutes) |
 
@@ -161,7 +163,7 @@ models:
     input_tokens: 7055556
     cache_read_tokens: 0
     cache_creation_tokens: 0
-    output_tokens: 12223
+    output_tokens: 122234
     time_cost_sec: 4416
     llm_requests: 108.8
 ```
